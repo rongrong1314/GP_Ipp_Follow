@@ -35,3 +35,21 @@ class Robot:
                 new_loc = [x, y - i * self.delta]
                 locs.append(new_loc)
             return np.array(locs)
+
+        # Generate data from a Gaussian mixture model
+        def initializeGP(self, ranges, training_points, visualize=True):
+            # Sample inputs and outputs 2D data
+            if visualize:
+                x = np.linspace(ranges[0], ranges[1], 100)
+                y = np.linspace(ranges[2], ranges[3], 100)
+                xvals, yvals = np.meshgrid(x, y, sparse=False, indexing='xy')
+                zvals = rv(xvals, yvals)
+
+            xtrain = np.linspace(ranges[0], ranges[1], training_points)
+            ytrain = np.linspace(ranges[2], ranges[3], training_points)
+            xtrain, ytrain = np.meshgrid(xtrain, ytrain, sparse=False, indexing='xy')
+            data = np.vstack([xtrain.ravel(), ytrain.ravel()]).T
+            ztrain = rv_sample(xtrain, ytrain)
+
+            # Create and train parmeters of GP model
+            self.GP = GPModel(data, np.reshape(ztrain, (1, data.shape[0])), lengthscale=10.0, variance=0.5)

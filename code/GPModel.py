@@ -31,7 +31,6 @@ class GPModel:
                 #下载数据后更新
                 self.m[:] = np.load('kernel_model.npy')
                 self.m.update_model(True)
-
             else:
                 print("Optimizing kernel parameters")
                 # Initilaize GP 回归 model

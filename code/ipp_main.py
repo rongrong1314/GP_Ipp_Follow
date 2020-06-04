@@ -36,4 +36,3 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111, projection = '3d')
 surf = ax1.plot_surface(x1observe, x2observe, observations.reshape(x1observe.shape), cmap = cm.coolwarm, linewidth = 0)
 plt.show()
-
