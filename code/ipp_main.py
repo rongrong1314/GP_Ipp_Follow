@@ -11,28 +11,42 @@ from Environment import Environment
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
+from Robot import *
+from Evaluation import Evaluation
 
 #环境边界
 ranges = (-10,10,-10,10)
 # Create a random enviroment sampled from a GP with an RBF kernel and specified hyperparameters
 # mean function 0
 # The enviorment will be constrained by a set of uniformly distributed  sample points of size NUM_PTS x NUM_PTS
-world = Environment(ranges, NUM_PTS = 20, variance = 100.0, lengthscale = 3.0, visualize = True)
+world = Environment(ranges, NUM_PTS = 20, variance = 100.0, lengthscale = 3.0, visualize = True,seed=1)
+evaluation = Evaluation(world)
 
-
-#训练GP的点数
-training_points = 25
-
-#使用噪声观测来训练GP
-world = Environment(ranges, NUM_PTS = 20, variance = 100.0, lengthscale = 3.0, visualize = True)
-# Generate observations at random locations in environment and plot resulting predicted model
+# Gather some prior observations to train the kernel (optional)
 x1observe = np.linspace(ranges[0], ranges[1], 5)
 x2observe = np.linspace(ranges[2], ranges[3], 5)
-x1observe, x2observe= np.meshgrid(x1observe, x2observe, sparse = False, indexing = 'xy')
+x1observe, x2observe = np.meshgrid(x1observe, x2observe, sparse = False, indexing = 'xy')
 data = np.vstack([x1observe.ravel(), x2observe.ravel()]).T
 observations = world.sample_value(data)
 
-fig = plt.figure()
-ax1 = fig.add_subplot(111, projection = '3d')
-surf = ax1.plot_surface(x1observe, x2observe, observations.reshape(x1observe.shape), cmap = cm.coolwarm, linewidth = 0)
-plt.show()
+# Create the point robot
+robot = Robot(sample_world = world.sample_value,
+              start_loc = (0.0, 0.0, 0.0),
+              ranges= (-10., 10., -10., 10.),
+              kernel_file = None,
+              kernel_dataset = None,
+              prior_dataset =  None,
+              init_lengthscale = 3.0,
+              init_variance = 100.0,
+              noise = 0.05,
+              path_generator = 'equal_dubins',
+              frontier_size = 20,
+              horizon_length = 5.0,
+              turning_radius = 0.5,
+              sample_step = 1.0,
+              evaluation = evaluation)
+
+robot.myopic_planner(T = 50)
+#robot.plot_information()
+robot.visualize_world_model()
+#robot.visualize_trajectory()
